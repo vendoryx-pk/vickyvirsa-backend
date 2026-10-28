@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns="https://jakarta.ee/xml/ns/jakartaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="https://jakarta.ee/xml/ns/jakartaee https://jakarta.ee/xml/ns/jakartaee/web-app_6_0.xsd"
+         version="6.0">
+    <display-name>vickyvirsa-backend</display-name>
+
+    <filter>
+        <filter-name>CorsFilter</filter-name>
+        <filter-class>com.vendoryx.filter.CorsFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>CorsFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+
+    <filter>
+        <filter-name>AuthFilter</filter-name>
+        <filter-class>com.vendoryx.filter.AuthFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>AuthFilter</filter-name>
+        <url-pattern>/api/*</url-pattern>
+    </filter-mapping>
+
+    <servlet>
+        <servlet-name>HealthServlet</servlet-name>
+        <servlet-class>com.vendoryx.servlet.HealthServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>HealthServlet</servlet-name>
+        <url-pattern>/health</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>LoginServlet</servlet-name>
+        <servlet-class>com.vendoryx.servlet.LoginServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>LoginServlet</servlet-name>
+        <url-pattern>/api/auth/login</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>ProductPublicServlet</servlet-name>
+        <servlet-class>com.vendoryx.servlet.ProductPublicServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ProductPublicServlet</servlet-name>
+        <url-pattern>/api/products</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>ProductPublicServlet</servlet-name>
+        <url-pattern>/api/products/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>GuestOrderServlet</servlet-name>
+        <servlet-class>com.vendoryx.servlet.GuestOrderServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GuestOrderServlet</servlet-name>
+        <url-pattern>/api/orders/guest</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminOrderServlet</servlet-name>
+        <servlet-class>com.vendoryx.servlet.AdminOrderServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminOrderServlet</servlet-name>
+        <url-pattern>/api/admin/orders</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminOrderStatusServlet</servlet-name>
+        <servlet-class>com.vendoryx.servlet.AdminOrderStatusServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminOrderStatusServlet</servlet-name>
+        <url-pattern>/api/admin/orders/status</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminProductServlet</servlet-name>
+        <servlet-class>com.vendoryx.servlet.AdminProductServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminProductServlet</servlet-name>
+        <url-pattern>/api/admin/products</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminProductStockServlet</servlet-name>
+        <servlet-class>com.vendoryx.servlet.AdminProductStockServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminProductStockServlet</servlet-name>
+        <url-pattern>/api/admin/products/stock</url-pattern>
+    </servlet-mapping>
+</web-app>

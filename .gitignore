@@ -1,0 +1,13 @@
+target/
+.vscode/launch.json
+.vscode/settings.json
+.env
+*.log
+.idea/
+*.iml
+.classpath
+.project
+.settings/
+.history/
+**/CheckHash.java
+**/GenHash.java

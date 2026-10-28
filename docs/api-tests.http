@@ -1,0 +1,108 @@
+### ============================================================
+### KAISE CHALAYEIN (Cursor / VS Code)
+### 1) Extension: "REST Client" by Huachao Mao
+### 2) Copy .vscode/settings.example.json → .vscode/settings.json
+###    aur apne real credentials bharo (settings.json gitignore hai)
+### 3) Status bar se REST Client environment "local" select karo
+### 4) POST line KE UPAR "Send Request" pe click karo
+###
+### CORS: VENDORYX_CORS_ORIGIN comma-separated, e.g.
+###   https://vendoryx-frontend.pages.dev,http://localhost:4200
+### OPTIONS preflight → 204 (no token). Never uses Allow-Origin: *
+### ============================================================
+
+@shopToken = {{shopLogin.response.body.$.data.token}}
+@adminToken = {{adminLogin.response.body.$.data.token}}
+
+### 1) Login shop user
+# @name shopLogin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{shopUser}}",
+  "password": "{{shopPassword}}"
+}
+
+### 2) Login admin (DEVELOPER)
+# @name adminLogin
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{adminUser}}",
+  "password": "{{adminPassword}}"
+}
+
+### 3) My shops (SHOP_USER — token shopIds)
+GET {{baseUrl}}/api/my-shops
+Authorization: Bearer {{shopToken}}
+
+### 4) Catalog categories (any logged-in user)
+GET {{baseUrl}}/api/categories
+Authorization: Bearer {{shopToken}}
+
+### 5) Catalog products list
+GET {{baseUrl}}/api/catalog/products?page=1&size=20
+Authorization: Bearer {{shopToken}}
+
+### 6) Admin products list (with stock)
+GET {{baseUrl}}/api/admin/products?page=1&size=20&includeInactive=false
+Authorization: Bearer {{adminToken}}
+
+### 7) Place order (SHOP_USER) — update shopId/productId as needed
+# @name placeOrder
+POST {{baseUrl}}/api/orders
+Authorization: Bearer {{shopToken}}
+Content-Type: application/json
+
+{
+  "shopId": 1,
+  "notes": "Test order from api-tests.http",
+  "items": [
+    { "productId": 1, "quantity": 2 },
+    { "productId": 2, "quantity": 1 }
+  ]
+}
+
+### 8) Shop user — my orders
+GET {{baseUrl}}/api/orders?page=1&size=20
+Authorization: Bearer {{shopToken}}
+
+### 9) Admin — orders list
+GET {{baseUrl}}/api/admin/orders?page=1&size=20
+Authorization: Bearer {{adminToken}}
+
+### 10) Admin — order detail
+GET {{baseUrl}}/api/admin/orders?id={{placeOrder.response.body.$.data.orderId}}
+Authorization: Bearer {{adminToken}}
+
+### 11) Admin — change status PENDING -> APPROVED
+PUT {{baseUrl}}/api/admin/orders/status?id={{placeOrder.response.body.$.data.orderId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "newStatus": "APPROVED",
+  "comments": "Stock checked and approved"
+}
+
+### 12) Admin — update product stock
+PUT {{baseUrl}}/api/admin/products/stock?productId=1
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "stockQuantity": 100,
+  "lowStockThreshold": 10
+}
+
+### 13) Admin — route sheet (open orders for a visit day)
+### dayId required (visit_days.day_id). cityId/status/from/to optional.
+### Default status = PENDING,APPROVED,PROCESSING,PACKED,OUT_FOR_DELIVERY
+GET {{baseUrl}}/api/admin/orders/route-sheet?dayId=1&cityId=1&from=2026-01-01&to=2026-12-31
+Authorization: Bearer {{adminToken}}
+
+### 14) Admin — route sheet filtered by status
+GET {{baseUrl}}/api/admin/orders/route-sheet?dayId=1&status=PENDING,APPROVED
+Authorization: Bearer {{adminToken}}

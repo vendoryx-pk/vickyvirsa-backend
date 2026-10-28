@@ -1,0 +1,14 @@
+target
+.git
+.github
+.vscode
+.idea
+.history
+docs
+.env
+**/.env*
+*.log
+**/*.class
+**/CheckHash.java
+**/GenHash.java
+# Keep README.md for HF Spaces front matter (not ignored)
