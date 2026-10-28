@@ -12,10 +12,15 @@ import java.util.Set;
 
 /**
  * Reflects an allowed request Origin into Access-Control-Allow-Origin.
- * Never uses wildcard {@code *}. Origins from {@code CORS_ALLOWED_ORIGINS}
- * (alias {@code VENDORYX_CORS_ORIGIN}); default {@code http://localhost:4200}.
+ * Never uses wildcard {@code *}.
+ *
+ * <p>Origins come from {@code CORS_ALLOWED_ORIGINS} (alias {@code VENDORYX_CORS_ORIGIN}),
+ * always merged with built-in defaults (local Angular + Cloudflare Pages).
  */
 public final class CorsUtil {
+
+    private static final String PAGES_PROD = "https://vickyvirsa-frontend.pages.dev";
+    private static final String PAGES_SUFFIX = ".vickyvirsa-frontend.pages.dev";
 
     private static final List<String> ALLOWED = parseAllowedOrigins();
 
@@ -27,32 +32,40 @@ public final class CorsUtil {
             return;
         }
         String normalized = normalizeOrigin(origin);
-        if (normalized.isEmpty() || "*".equals(normalized) || !ALLOWED.contains(normalized)) {
+        if (normalized.isEmpty() || "*".equals(normalized) || !isAllowed(normalized)) {
             return;
         }
 
         response.setHeader("Access-Control-Allow-Origin", origin.trim());
-        // Guest: GET/POST/OPTIONS; keep PUT/PATCH/DELETE for existing admin APIs
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
         response.setHeader("Access-Control-Max-Age", "3600");
         response.setHeader("Vary", "Origin");
     }
 
+    static boolean isAllowed(String normalizedOrigin) {
+        if (ALLOWED.contains(normalizedOrigin)) {
+            return true;
+        }
+        // Cloudflare Pages preview deployments: https://<hash>.vickyvirsa-frontend.pages.dev
+        return normalizedOrigin.startsWith("https://")
+                && normalizedOrigin.endsWith(PAGES_SUFFIX)
+                && normalizedOrigin.length() > ("https://".length() + PAGES_SUFFIX.length());
+    }
+
     private static List<String> parseAllowedOrigins() {
-        String raw = Env.corsAllowedOriginsRaw();
         Set<String> set = new LinkedHashSet<>();
-        if (raw == null || raw.isBlank() || "*".equals(raw.trim())) {
-            set.add("http://localhost:4200");
-        } else {
+        // Built-in defaults — always present even if env forgets Pages
+        set.add("http://localhost:4200");
+        set.add(PAGES_PROD);
+
+        String raw = Env.corsAllowedOriginsRaw();
+        if (raw != null && !raw.isBlank() && !"*".equals(raw.trim())) {
             for (String part : raw.split(",")) {
                 String origin = normalizeOrigin(part);
                 if (!origin.isEmpty() && !"*".equals(origin)) {
                     set.add(origin);
                 }
-            }
-            if (set.isEmpty()) {
-                set.add("http://localhost:4200");
             }
         }
         return Collections.unmodifiableList(new ArrayList<>(set));
