@@ -56,7 +56,8 @@ public class AppServer {
         System.out.println(" http://0.0.0.0:" + port);
         System.out.println(" GET  /health");
         System.out.println(" Public: GET /api/products, GET /api/products/{id}, POST /api/orders/guest");
-        System.out.println(" Auth: Bearer JWT on other /api/* (except login)");
+        System.out.println(" Admin: /api/admin/products, /variants, /images, /categories, /uploads/sign");
+        System.out.println(" Auth: Bearer JWT OWNER|STAFF on /api/admin/*");
         System.out.println("========================================");
         tomcat.getServer().await();
     }

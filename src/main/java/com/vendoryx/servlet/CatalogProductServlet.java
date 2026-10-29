@@ -32,7 +32,7 @@ public class CatalogProductServlet extends HttpServlet {
             int page = JsonUtil.pageOrDefault(request, 1);
             int size = JsonUtil.sizeOrDefault(request, 20, 100);
             JsonUtil.writeSuccess(response, "Products loaded",
-                    productDAO.listCatalog(categoryId, q, page, size));
+                    productDAO.listAdminCatalog(categoryId, q, Boolean.TRUE, page, size));
         } catch (SQLException e) {
             e.printStackTrace();
             JsonUtil.writeError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,

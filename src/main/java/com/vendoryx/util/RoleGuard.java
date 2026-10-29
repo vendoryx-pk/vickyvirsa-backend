@@ -38,13 +38,26 @@ public final class RoleGuard {
         return requireRole(req, resp, ADMIN_ROLES);
     }
 
+    /** OWNER only (e.g. create/delete products, set prices). */
+    public static boolean requireOwner(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        return requireRole(req, resp, "OWNER");
+    }
+
+    public static boolean isOwner(HttpServletRequest req) {
+        return "OWNER".equalsIgnoreCase(getRole(req));
+    }
+
+    public static String getRole(HttpServletRequest req) {
+        Object roleObj = req.getAttribute(ATTR_ROLE);
+        return roleObj != null ? roleObj.toString() : null;
+    }
+
     /**
      * @return true if role is allowed; otherwise writes 403 and returns false
      */
     public static boolean requireRole(HttpServletRequest req, HttpServletResponse resp, String... allowedRoles)
             throws IOException {
-        Object roleObj = req.getAttribute(ATTR_ROLE);
-        String role = roleObj != null ? roleObj.toString() : null;
+        String role = getRole(req);
 
         if (role != null && allowedRoles != null) {
             for (String allowed : allowedRoles) {

@@ -81,6 +81,28 @@ public final class JsonUtil {
         }
     }
 
+    public static Long longVal(JsonObject json, String key) {
+        if (json == null || !json.has(key) || json.get(key).isJsonNull()) {
+            return null;
+        }
+        try {
+            if (json.get(key).isJsonPrimitive() && json.get(key).getAsJsonPrimitive().isString()) {
+                String raw = json.get(key).getAsString().trim();
+                if (raw.isEmpty()) {
+                    return null;
+                }
+                return Long.parseLong(raw);
+            }
+            return json.get(key).getAsLong();
+        } catch (NumberFormatException | ClassCastException e) {
+            return null;
+        }
+    }
+
+    public static boolean hasNonNull(JsonObject json, String key) {
+        return json != null && json.has(key) && !json.get(key).isJsonNull();
+    }
+
     public static Double decimal(JsonObject json, String key) {
         if (json == null || !json.has(key) || json.get(key).isJsonNull()) {
             return null;

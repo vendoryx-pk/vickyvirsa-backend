@@ -98,4 +98,40 @@
         <servlet-name>AdminProductStockServlet</servlet-name>
         <url-pattern>/api/admin/products/stock</url-pattern>
     </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminProductVariantServlet</servlet-name>
+        <servlet-class>com.vendoryx.servlet.AdminProductVariantServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminProductVariantServlet</servlet-name>
+        <url-pattern>/api/admin/products/variants</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminProductImageServlet</servlet-name>
+        <servlet-class>com.vendoryx.servlet.AdminProductImageServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminProductImageServlet</servlet-name>
+        <url-pattern>/api/admin/products/images</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminCategoryServlet</servlet-name>
+        <servlet-class>com.vendoryx.servlet.AdminCategoryServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminCategoryServlet</servlet-name>
+        <url-pattern>/api/admin/categories</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AdminUploadSignServlet</servlet-name>
+        <servlet-class>com.vendoryx.servlet.AdminUploadSignServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>AdminUploadSignServlet</servlet-name>
+        <url-pattern>/api/admin/uploads/sign</url-pattern>
+    </servlet-mapping>
 </web-app>

@@ -2,6 +2,7 @@ package com.vendoryx.servlet;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
+import com.vendoryx.dao.AdminAuditDAO;
 import com.vendoryx.dao.ProductDAO;
 import com.vendoryx.util.CorsUtil;
 import com.vendoryx.util.JsonUtil;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class AdminProductStockServlet extends HttpServlet {
 
     private final ProductDAO productDAO = new ProductDAO();
+    private final AdminAuditDAO auditDAO = new AdminAuditDAO();
 
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -59,6 +61,9 @@ public class AdminProductStockServlet extends HttpServlet {
                 JsonUtil.writeError(response, HttpServletResponse.SC_NOT_FOUND, "Variant not found");
                 return;
             }
+            auditDAO.log(RoleGuard.getAdminId(request), "VARIANT_STOCK_UPDATE", "product_variant",
+                    variantId.longValue(),
+                    Map.of("stockQuantity", stockQuantity, "lowStockThreshold", lowStockThreshold));
             JsonUtil.writeSuccess(response, "Stock updated", updated);
         } catch (JsonSyntaxException e) {
             JsonUtil.writeError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid JSON body");
