@@ -140,6 +140,15 @@ public class OrderService {
                 guestCheckoutDAO.bumpCustomerStats(conn, customerId, total);
 
                 conn.commit();
+
+                // Email AFTER commit — failures must never affect the order response
+                try {
+                    OwnerOrderAlertService.getInstance().notifyNewGuestOrderAsync(
+                            created, name, phoneE164, addr, cityNorm, lines, quantities);
+                } catch (Exception mailEx) {
+                    System.err.println("Failed to schedule owner order alert: " + mailEx.getMessage());
+                }
+
                 return guestCheckoutDAO.toResponse(created);
             } catch (BusinessException e) {
                 conn.rollback();

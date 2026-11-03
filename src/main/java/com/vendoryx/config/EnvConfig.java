@@ -22,6 +22,10 @@ public final class EnvConfig {
         }
     }
 
+    /**
+     * Fallback when {@code System.getenv("PORT")} is unset (AppServer prefers getenv first).
+     * Reads OS env / optional local {@code .env} via {@link Env}.
+     */
     public static int port() {
         String raw = Env.first("PORT");
         if (raw == null || raw.isBlank()) {
@@ -42,8 +46,9 @@ public final class EnvConfig {
     private static void fail(String message) {
         System.err.println("FATAL: " + message);
         System.err.println("Required: DB_URL (or VENDORYX_DB_URL), DB_USER, DB_PASSWORD,");
-        System.err.println("          VENDORYX_JWT_SECRET (>=32 chars)");
-        System.err.println("Optional: CORS_ALLOWED_ORIGINS (or VENDORYX_CORS_ORIGIN), PORT (default 8080)");
+        System.err.println("          VENDORYX_JWT_SECRET (>=32 characters)");
+        System.err.println("Optional: CORS_ALLOWED_ORIGINS, PORT (default 8080), CLOUDINARY_*,");
+        System.err.println("          RESEND_API_KEY, MAIL_FROM, OWNER_NOTIFY_EMAIL, ADMIN_URL");
         throw new IllegalStateException(message);
     }
 }

@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 /**
- * GET /health — public liveness probe (no DB, no auth).
+ * GET /health and GET /api/health — public liveness probe (no DB, no auth).
  */
 public class HealthServlet extends HttpServlet {
 

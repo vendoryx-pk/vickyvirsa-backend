@@ -80,7 +80,9 @@ public class AuthFilter implements Filter {
     }
 
     private static boolean isPublic(String path, String method) {
-        if ("/api/auth/login".equals(path) || "/health".equals(path)) {
+        if ("/api/auth/login".equals(path)
+                || "/health".equals(path)
+                || "/api/health".equals(path)) {
             return true;
         }
         if ("GET".equalsIgnoreCase(method)) {

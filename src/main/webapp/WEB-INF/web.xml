@@ -31,6 +31,10 @@
         <servlet-name>HealthServlet</servlet-name>
         <url-pattern>/health</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>HealthServlet</servlet-name>
+        <url-pattern>/api/health</url-pattern>
+    </servlet-mapping>
 
     <servlet>
         <servlet-name>LoginServlet</servlet-name>
