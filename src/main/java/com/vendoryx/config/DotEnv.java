@@ -24,8 +24,8 @@ public final class DotEnv {
             return;
         }
         loaded = true;
-        Path path = Path.of(".env");
-        if (!Files.isRegularFile(path)) {
+        Path path = resolveEnvFile();
+        if (path == null) {
             return;
         }
         try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
@@ -47,10 +47,29 @@ public final class DotEnv {
                 }
                 FILE_VARS.put(key, value);
             }
-            System.out.println("Loaded environment from .env (" + FILE_VARS.size() + " keys)");
+            System.out.println("Loaded environment from " + path.toAbsolutePath()
+                    + " (" + FILE_VARS.size() + " keys)");
         } catch (IOException e) {
             System.err.println("WARNING: could not read .env: " + e.getMessage());
         }
+    }
+
+    /** Prefer cwd {@code .env}, then walk up a few parents (IDE / jar cwd quirks). */
+    private static Path resolveEnvFile() {
+        Path cwd = Path.of("").toAbsolutePath().normalize();
+        Path cur = cwd;
+        for (int i = 0; i < 4; i++) {
+            Path candidate = cur.resolve(".env");
+            if (Files.isRegularFile(candidate)) {
+                return candidate;
+            }
+            Path parent = cur.getParent();
+            if (parent == null || parent.equals(cur)) {
+                break;
+            }
+            cur = parent;
+        }
+        return null;
     }
 
     public static String get(String key) {

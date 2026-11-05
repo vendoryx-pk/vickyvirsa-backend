@@ -67,8 +67,30 @@ public class AppServer {
         System.out.println(" GET  /health  and  GET /api/health");
         System.out.println(" Public: GET /api/products, POST /api/orders/guest");
         System.out.println(" Admin: /api/admin/* (JWT OWNER|STAFF)");
+        logEmailConfigStatus();
         System.out.println("========================================");
         tomcat.getServer().await();
+    }
+
+    /** Logs whether owner-order email env is present (never prints secret values). */
+    private static void logEmailConfigStatus() {
+        boolean key = notBlank(com.vendoryx.config.Env.first("RESEND_API_KEY"));
+        boolean from = notBlank(com.vendoryx.config.Env.first("MAIL_FROM"));
+        boolean to = notBlank(com.vendoryx.config.Env.first("OWNER_NOTIFY_EMAIL"));
+        if (key && from && to) {
+            System.out.println(" Owner email alerts: CONFIGURED");
+        } else {
+            System.out.println(" Owner email alerts: NOT CONFIGURED (missing"
+                    + (key ? "" : " RESEND_API_KEY")
+                    + (from ? "" : " MAIL_FROM")
+                    + (to ? "" : " OWNER_NOTIFY_EMAIL")
+                    + ")");
+            System.out.println(" Set these in Render Dashboard → Environment (local .env is gitignored)");
+        }
+    }
+
+    private static boolean notBlank(String s) {
+        return s != null && !s.isBlank();
     }
 
     /** Prefer {@code System.getenv("PORT")}, then EnvConfig (env / .env), else 8080. */

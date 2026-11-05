@@ -87,7 +87,18 @@ public class OwnerOrderAlertService {
 
         if (apiKey == null || apiKey.isBlank() || from == null || from.isBlank()
                 || to == null || to.isBlank()) {
-            String msg = "Email skipped: missing RESEND_API_KEY, MAIL_FROM, or OWNER_NOTIFY_EMAIL";
+            StringBuilder missing = new StringBuilder();
+            if (apiKey == null || apiKey.isBlank()) {
+                missing.append("RESEND_API_KEY ");
+            }
+            if (from == null || from.isBlank()) {
+                missing.append("MAIL_FROM ");
+            }
+            if (to == null || to.isBlank()) {
+                missing.append("OWNER_NOTIFY_EMAIL ");
+            }
+            String msg = "Email skipped: missing env " + missing.toString().trim()
+                    + " (set on Render Environment / local .env — .env is not deployed)";
             System.out.println(msg);
             emailLogDAO.markFailed(emailId, msg);
             return;
