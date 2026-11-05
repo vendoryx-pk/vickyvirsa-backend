@@ -94,7 +94,10 @@ public class AuthFilter implements Filter {
                 return !rest.isEmpty() && rest.indexOf('/') < 0;
             }
         }
-        return "POST".equalsIgnoreCase(method) && "/api/orders/guest".equals(path);
+        if ("POST".equalsIgnoreCase(method)) {
+            return "/api/orders/guest".equals(path) || "/api/orders/track".equals(path);
+        }
+        return false;
     }
 
     private void writeJson(HttpServletResponse resp, int status, String message) throws IOException {

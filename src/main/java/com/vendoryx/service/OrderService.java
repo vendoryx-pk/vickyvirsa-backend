@@ -10,6 +10,7 @@ import com.vendoryx.dao.OrderDAO;
 import com.vendoryx.dao.ProductDAO;
 import com.vendoryx.model.Order;
 import com.vendoryx.model.OrderItem;
+import com.vendoryx.util.PhoneUtil;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.math.BigDecimal;
@@ -52,7 +53,7 @@ public class OrderService {
 
         String name = requireText(customerName, "customerName");
         String phoneRaw = requireText(phone, "phone");
-        String phoneE164 = normalizePhoneE164(phoneRaw);
+        String phoneE164 = PhoneUtil.normalizePhoneE164(phoneRaw);
         if (phoneE164 == null) {
             throw new BusinessException(HttpServletResponse.SC_BAD_REQUEST,
                     "Invalid phone format (use 03XXXXXXXXX or +92XXXXXXXXXX)");
@@ -167,27 +168,6 @@ public class OrderService {
             throw new BusinessException(HttpServletResponse.SC_BAD_REQUEST, field + " is required");
         }
         return value.trim();
-    }
-
-    /**
-     * customers.chk_customer_phone requires {@code ^\\+[0-9]{10,15}$}.
-     * Accepts 03XXXXXXXXX / 3XXXXXXXXX / 92... / +92...
-     */
-    private static String normalizePhoneE164(String phone) {
-        String p = phone.replaceAll("[\\s-]", "");
-        if (p.matches("^\\+[0-9]{10,15}$")) {
-            return p;
-        }
-        if (p.matches("^03[0-9]{9}$")) {
-            return "+92" + p.substring(1);
-        }
-        if (p.matches("^3[0-9]{9}$")) {
-            return "+92" + p;
-        }
-        if (p.matches("^92[0-9]{10}$")) {
-            return "+" + p;
-        }
-        return null;
     }
 
     public Map<String, Object> placeOrder(int userId, List<Integer> tokenShopIds, int shopId,
