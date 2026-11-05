@@ -169,7 +169,8 @@ public class OwnerOrderAlertService {
         sb.append("Total: Rs ").append(formatMoney(order.totalAmount())).append('\n');
         sb.append("Payment: COD\n");
         if (adminUrl != null && !adminUrl.isBlank()) {
-            sb.append("\nAdmin panel: ").append(adminUrl.trim()).append('\n');
+            String href = orderAdminHref(adminUrl, order.orderId());
+            sb.append("\nAdmin panel: ").append(href).append('\n');
             sb.append("Order id: ").append(order.orderId()).append('\n');
         }
         return sb.toString();
@@ -189,8 +190,8 @@ public class OwnerOrderAlertService {
         }
         String adminLink = "";
         if (adminUrl != null && !adminUrl.isBlank()) {
-            String href = adminUrl.trim();
-            adminLink = "<p><a href=\"" + esc(href) + "\">Admin panel</a>"
+            String href = orderAdminHref(adminUrl, order.orderId());
+            adminLink = "<p><a href=\"" + esc(href) + "\">Admin panel — open order</a>"
                     + " (order id " + order.orderId() + ")</p>";
         }
         return """
@@ -225,6 +226,27 @@ public class OwnerOrderAlertService {
                 esc(formatMoney(order.totalAmount())),
                 adminLink
         );
+    }
+
+    /**
+     * Frontend route: {@code /admin/orders/:id}.
+     * {@code ADMIN_URL} may be {@code .../admin/orders} — append {@code /{orderId}}.
+     */
+    static String orderAdminHref(String adminUrl, long orderId) {
+        String base = adminUrl.trim();
+        int q = base.indexOf('?');
+        if (q >= 0) {
+            base = base.substring(0, q);
+        }
+        while (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        // Avoid .../orders/12/12 if ADMIN_URL already ends with the id
+        String suffix = "/" + orderId;
+        if (base.endsWith(suffix)) {
+            return base;
+        }
+        return base + suffix;
     }
 
     static String esc(String raw) {
