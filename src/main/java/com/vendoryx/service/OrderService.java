@@ -264,10 +264,12 @@ public class OrderService {
     /**
      * Admin order status change (VickyVirsa).
      * Status values: PENDING, CONFIRMED, DISPATCHED, DELIVERED, CANCELLED, RETURNED.
+     * customerNote is customer-visible (track API); internalNote is admin-only (history.comments).
      */
-    public Map<String, Object> changeAdminOrderStatus(long orderId, String newStatusRaw, String comments,
+    public Map<String, Object> changeAdminOrderStatus(long orderId, String newStatusRaw,
+                                                      String customerNote, String internalNote,
                                                       String courierName, String trackingNumber,
-                                                      String cancelReason, int adminId)
+                                                      int adminId)
             throws BusinessException, SQLException {
 
         if (newStatusRaw == null || newStatusRaw.isBlank()) {
@@ -277,6 +279,14 @@ public class OrderService {
         if (!ADMIN_TRANSITIONS.containsKey(newStatus)) {
             throw new BusinessException(HttpServletResponse.SC_BAD_REQUEST,
                     "Invalid status (allowed: PENDING, CONFIRMED, DISPATCHED, DELIVERED, CANCELLED, RETURNED)");
+        }
+
+        String customer = blankToNull(customerNote);
+        String internal = blankToNull(internalNote);
+
+        if ("CANCELLED".equals(newStatus) && customer == null) {
+            throw new BusinessException(HttpServletResponse.SC_BAD_REQUEST,
+                    "customerNote is required when cancelling an order");
         }
 
         if ("DISPATCHED".equals(newStatus)) {
@@ -304,11 +314,10 @@ public class OrderService {
                             "Invalid status transition: " + oldStatus + " -> " + newStatus);
                 }
 
-                String reason = cancelReason != null && !cancelReason.isBlank()
-                        ? cancelReason.trim()
-                        : comments;
-                adminOrderDAO.updateStatus(conn, orderId, newStatus, reason, courierName, trackingNumber);
-                adminOrderDAO.insertStatusHistory(conn, orderId, oldStatus, newStatus, adminId, comments);
+                // orders.cancel_reason stores the customer-visible cancel message
+                adminOrderDAO.updateStatus(conn, orderId, newStatus, customer, courierName, trackingNumber);
+                adminOrderDAO.insertStatusHistory(conn, orderId, oldStatus, newStatus, adminId,
+                        internal, customer);
 
                 if (("CANCELLED".equals(newStatus) || "RETURNED".equals(newStatus))
                         && !oldStatus.equals(newStatus)) {
@@ -331,6 +340,13 @@ public class OrderService {
                 conn.setAutoCommit(true);
             }
         }
+    }
+
+    private static String blankToNull(String s) {
+        if (s == null || s.isBlank()) {
+            return null;
+        }
+        return s.trim();
     }
 
     /** Legacy B2B status change — disabled on VickyVirsa schema. */

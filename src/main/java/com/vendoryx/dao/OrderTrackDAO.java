@@ -80,7 +80,7 @@ public class OrderTrackDAO {
 
     private List<Map<String, Object>> loadHistory(Connection conn, long orderId) throws SQLException {
         String sql = """
-                SELECT new_status, changed_at
+                SELECT new_status, customer_note, changed_at
                 FROM order_status_history
                 WHERE order_id = ?
                 ORDER BY changed_at ASC, history_id ASC
@@ -93,6 +93,8 @@ public class OrderTrackDAO {
                     Map<String, Object> m = new LinkedHashMap<>();
                     m.put("status", rs.getString("new_status"));
                     m.put("time", ts(rs.getTimestamp("changed_at")));
+                    // Never expose comments/internalNote on public track
+                    m.put("customerNote", rs.getString("customer_note"));
                     history.add(m);
                 }
             }

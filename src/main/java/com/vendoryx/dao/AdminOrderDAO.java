@@ -164,10 +164,12 @@ public class AdminOrderDAO {
     }
 
     public void insertStatusHistory(Connection conn, long orderId, String oldStatus, String newStatus,
-                                    Integer adminId, String comments) throws SQLException {
+                                    Integer adminId, String internalNote, String customerNote)
+            throws SQLException {
         String sql = """
-                INSERT INTO order_status_history (order_id, old_status, new_status, changed_by_admin_id, comments)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO order_status_history
+                    (order_id, old_status, new_status, changed_by_admin_id, comments, customer_note)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """;
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setLong(1, orderId);
@@ -182,7 +184,16 @@ public class AdminOrderDAO {
             } else {
                 ps.setInt(4, adminId);
             }
-            ps.setString(5, comments);
+            if (internalNote == null || internalNote.isBlank()) {
+                ps.setNull(5, Types.VARCHAR);
+            } else {
+                ps.setString(5, internalNote.trim());
+            }
+            if (customerNote == null || customerNote.isBlank()) {
+                ps.setNull(6, Types.VARCHAR);
+            } else {
+                ps.setString(6, customerNote.trim());
+            }
             ps.executeUpdate();
         }
     }
@@ -328,7 +339,8 @@ public class AdminOrderDAO {
 
     private List<Map<String, Object>> loadHistory(Connection conn, long orderId) throws SQLException {
         String sql = """
-                SELECT history_id, old_status, new_status, changed_by_admin_id, comments, changed_at
+                SELECT history_id, old_status, new_status, changed_by_admin_id,
+                       comments, customer_note, changed_at
                 FROM order_status_history WHERE order_id = ? ORDER BY changed_at ASC, history_id ASC
                 """;
         List<Map<String, Object>> items = new ArrayList<>();
@@ -342,7 +354,10 @@ public class AdminOrderDAO {
                     m.put("newStatus", rs.getString("new_status"));
                     int adminId = rs.getInt("changed_by_admin_id");
                     m.put("changedByAdminId", rs.wasNull() ? null : adminId);
-                    m.put("comments", rs.getString("comments"));
+                    String internal = rs.getString("comments");
+                    m.put("comments", internal); // legacy alias of internalNote
+                    m.put("internalNote", internal);
+                    m.put("customerNote", rs.getString("customer_note"));
                     m.put("changedAt", ts(rs.getTimestamp("changed_at")));
                     items.add(m);
                 }

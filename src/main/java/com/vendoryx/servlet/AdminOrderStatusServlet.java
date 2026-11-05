@@ -18,7 +18,9 @@ import java.util.Map;
 
 /**
  * PUT /api/admin/orders/status?id=
- * Body: { status, comments?, courierName?, trackingNumber?, cancelReason? }
+ * Body: { status, customerNote?, internalNote?, courierName?, trackingNumber? }
+ * Legacy aliases: comments → internalNote; cancelReason → customerNote (cancel only).
+ * CANCELLED requires customerNote.
  */
 public class AdminOrderStatusServlet extends HttpServlet {
 
@@ -53,13 +55,18 @@ public class AdminOrderStatusServlet extends HttpServlet {
 
             JsonObject body = JsonUtil.parseObject(JsonUtil.readBody(request));
             String newStatus = JsonUtil.textAny(body, "status", "newStatus");
-            String comments = JsonUtil.text(body, "comments");
             String courierName = JsonUtil.textAny(body, "courierName", "courier_name");
             String trackingNumber = JsonUtil.textAny(body, "trackingNumber", "tracking_number");
-            String cancelReason = JsonUtil.textAny(body, "cancelReason", "cancel_reason");
+
+            String customerNote = firstNonBlank(
+                    JsonUtil.textAny(body, "customerNote", "customer_note"),
+                    JsonUtil.textAny(body, "cancelReason", "cancel_reason"));
+            String internalNote = firstNonBlank(
+                    JsonUtil.textAny(body, "internalNote", "internal_note"),
+                    JsonUtil.text(body, "comments"));
 
             Map<String, Object> updated = orderService.changeAdminOrderStatus(
-                    orderId, newStatus, comments, courierName, trackingNumber, cancelReason, adminId);
+                    orderId, newStatus, customerNote, internalNote, courierName, trackingNumber, adminId);
             JsonUtil.writeSuccess(response, "Order status updated", updated);
         } catch (NumberFormatException e) {
             JsonUtil.writeError(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid order id");
@@ -72,5 +79,15 @@ public class AdminOrderStatusServlet extends HttpServlet {
             JsonUtil.writeError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Database error: " + e.getMessage());
         }
+    }
+
+    private static String firstNonBlank(String a, String b) {
+        if (a != null && !a.isBlank()) {
+            return a.trim();
+        }
+        if (b != null && !b.isBlank()) {
+            return b.trim();
+        }
+        return null;
     }
 }
